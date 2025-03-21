@@ -162,7 +162,7 @@ export function CreatePollForm() {
                     <HelpCircle className="h-3.5 w-3.5 ml-1 text-[#7f849c]" />
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#45475a] text-[#cdd6f4] border-[#6c7086]">
-                    Your name won't be shown as the poll creator
+                    Your name won&#39;t be shown as the poll creator
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

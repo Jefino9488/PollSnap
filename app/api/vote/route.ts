@@ -38,7 +38,7 @@ export async function POST(request: Request) {
             // Create the vote
             const vote = await tx.vote.create({
                 data: {
-                    userId, // Now a string, satisfying Prisma's type
+                    userId,
                     pollId,
                     optionId,
                 },
@@ -79,6 +79,6 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         console.error("Voting error:", error);
-        return NextResponse.json({ error: "Failed to record vote" }, { status: 500 });
+        return NextResponse.json({ error: (error as Error).message || "Failed to record vote" }, { status: 500 });
     }
 }

@@ -53,7 +53,7 @@ export async function GET() {
         return NextResponse.json(formattedData);
     } catch (error) {
         console.error("Failed to fetch profile data:", error);
-        return NextResponse.json({ error: "Failed to fetch profile data" }, { status: 500 });
+        return NextResponse.json({ error: (error as Error).message || "Failed to fetch profile data" }, { status: 500 });
     }
 }
 

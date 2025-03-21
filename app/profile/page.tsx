@@ -62,7 +62,7 @@ export default function ProfilePage() {
     useEffect(() => {
         if (session) {
             fetchProfileData()
-            const interval = setInterval(fetchProfileData, 5000)
+            const interval = setInterval(fetchProfileData, 30000)
             return () => clearInterval(interval)
         }
     }, [session])

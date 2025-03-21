@@ -4,15 +4,19 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
 export async function GET() {
-    // Existing GET logic remains unchanged
     const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
+
     try {
         const dbPolls = await prisma.poll.findMany({
             include: {
                 createdBy: { select: { id: true, name: true } },
                 options: { select: { id: true, text: true, voteCount: true } },
                 votes: {
-                    where: { userId: session?.user?.id || "" },
+                    where: { userId },
                     select: { optionId: true },
                 },
             },
@@ -34,8 +38,7 @@ export async function GET() {
 
         return NextResponse.json(formattedPolls);
     } catch (error) {
-        console.error("Failed to fetch polls:", error);
-        return NextResponse.json({ error: "Failed to fetch polls" }, { status: 500 });
+        console.error("Failed to fetch polls:", error as Error);
     }
 }
 

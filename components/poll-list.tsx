@@ -49,7 +49,7 @@ export function PollList() {
     fetchPolls()
 
     // Poll every 5 seconds for updates
-    const interval = setInterval(fetchPolls, 5000)
+    const interval = setInterval(fetchPolls, 30000)
 
     return () => clearInterval(interval)
   }, [])

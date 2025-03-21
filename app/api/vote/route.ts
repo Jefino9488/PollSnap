@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     if (!session || !session.user || !session.user.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const userId = session.user.id;
+    const userId = session.user.id as string; // Type assertion since logic ensures id exists
 
     const { pollId, optionId } = await request.json();
     if (!pollId || !optionId) {
@@ -79,6 +79,9 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         console.error("Voting error:", error);
-        return NextResponse.json({ error: (error as Error).message || "Failed to record vote" }, { status: 500 });
+        return NextResponse.json(
+            { error: (error as Error).message || "Failed to record vote" },
+            { status: 500 }
+        );
     }
 }

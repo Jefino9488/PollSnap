@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useSession, signOut } from "next-auth/react"
-import { motion } from "framer-motion"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { StatsSection } from "@/components/stats-section"
-import { UserPollList } from "@/components/user-poll-list"
-import { CreatePollForm } from "@/components/create-poll-form"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, AlertCircle, Trash2 } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
+import { useSession, signOut } from "next-auth/react";
+import useSWR from "swr";
+import { motion } from "framer-motion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { StatsSection } from "@/components/stats-section";
+import { UserPollList } from "@/components/user-poll-list";
+import { CreatePollForm } from "@/components/create-poll-form";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, AlertCircle, Trash2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -22,69 +22,66 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import {useState} from "react";
 
 type ProfileData = {
-    name: string | null
-    email: string | null
-    image: string | null
+    name: string | null;
+    email: string | null;
+    image: string | null;
     createdPolls: {
-        id: string
-        title: string
-        totalVotes: number
-        options: { id: string; text: string; voteCount: number }[]
-    }[]
-    votesCast: { pollId: string; pollTitle: string; optionId: string; optionText: string; createdAt: string }[]
-}
+        id: string;
+        title: string;
+        totalVotes: number;
+        options: { id: string; text: string; voteCount: number }[];
+    }[];
+    votesCast: { pollId: string; pollTitle: string; optionId: string; optionText: string; createdAt: string }[];
+};
+
+// Fetcher function for SWR
+const fetcher = (url: string) =>
+    fetch(url).then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch profile data");
+        return res.json();
+    });
 
 export default function ProfilePage() {
-    const { data: session, status } = useSession()
-    const [profileData, setProfileData] = useState<ProfileData | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [isDeleting, setIsDeleting] = useState(false)
+    const { data: session, status } = useSession();
 
-    const fetchProfileData = async () => {
-        try {
-            setError(null)
-            const response = await fetch("/api/profile")
-            if (!response.ok) throw new Error("Failed to fetch profile data")
-            const data = await response.json()
-            setProfileData(data)
-        } catch (error) {
-            console.error("Failed to fetch profile data:", error)
-            setError("Failed to load profile data. Please try again later.")
-        } finally {
-            setLoading(false)
+    // Use SWR to fetch profile data
+    const { data: profileData, error: fetchError, isLoading } = useSWR(
+        session ? "/api/profile" : null,
+        fetcher,
+        {
+            revalidateOnFocus: false, // Prevent refetching on tab switch
+            revalidateOnReconnect: true, // Refetch if network reconnects
+            refreshInterval: 60000, // Refresh every 60 seconds (adjustable)
+            dedupingInterval: 30000, // Dedupe requests within 30 seconds
         }
-    }
+    );
 
-    useEffect(() => {
-        if (session) {
-            fetchProfileData()
-            const interval = setInterval(fetchProfileData, 30000)
-            return () => clearInterval(interval)
-        }
-    }, [session])
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null); // New state for delete errors
 
     const handleDeleteAccount = async () => {
-        setIsDeleting(true)
+        setIsDeleting(true);
+        setDeleteError(null); // Reset delete error
         try {
-            const response = await fetch("/api/profile", { method: "DELETE" })
+            const response = await fetch("/api/profile", { method: "DELETE" });
             if (response.ok) {
-                signOut({ callbackUrl: "/login" })
+                signOut({ callbackUrl: "/login" });
             } else {
-                throw new Error("Failed to delete account")
+                throw new Error("Failed to delete account");
             }
         } catch (error) {
-            console.error("Delete account error:", error)
-            setError("Failed to delete account. Please try again later.")
+            console.error("Delete account error:", error);
+            setDeleteError("Failed to delete account. Please try again later.");
         } finally {
-            setIsDeleting(false)
+            setIsDeleting(false);
         }
-    }
+    };
 
-    if (status === "loading" || (loading && !profileData)) {
+    if (status === "loading" || isLoading) {
         return (
             <div className="flex items-center justify-center h-[70vh]">
                 <div className="flex flex-col items-center gap-4">
@@ -92,7 +89,7 @@ export default function ProfilePage() {
                     <p className="text-[#cdd6f4] text-lg">Loading profile...</p>
                 </div>
             </div>
-        )
+        );
     }
 
     if (!session) {
@@ -107,10 +104,10 @@ export default function ProfilePage() {
                     <AlertDescription className="text-[#f38ba8]/80">Please sign in to view your profile</AlertDescription>
                 </Alert>
             </div>
-        )
+        );
     }
 
-    if (error) {
+    if (fetchError) {
         return (
             <div className="space-y-6">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-[#cba6f7] to-[#f5c2e7] bg-clip-text text-transparent">
@@ -119,13 +116,15 @@ export default function ProfilePage() {
                 <Alert className="bg-[#313244] text-[#f38ba8] border-[#f38ba8]">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle className="text-[#f38ba8] font-medium">Error</AlertTitle>
-                    <AlertDescription className="text-[#f38ba8]/80">{error}</AlertDescription>
+                    <AlertDescription className="text-[#f38ba8]/80">
+                        {fetchError.message || "Failed to load profile data. Please try again later."}
+                    </AlertDescription>
                 </Alert>
             </div>
-        )
+        );
     }
 
-    if (!profileData) return null
+    if (!profileData) return null;
 
     return (
         <motion.div
@@ -182,7 +181,7 @@ export default function ProfilePage() {
                             <p className="text-[#bac2de] text-center py-4">You haven&#39;t cast any votes yet.</p>
                         ) : (
                             <div className="space-y-3">
-                                {profileData.votesCast.map((vote) => (
+                                {profileData.votesCast.map((vote: ProfileData["votesCast"][number]) => (
                                     <motion.div
                                         key={vote.optionId}
                                         className="bg-[#45475a] p-4 rounded-lg border border-[#6c7086]"
@@ -210,7 +209,13 @@ export default function ProfilePage() {
                     <div className="bg-[#313244] rounded-xl border border-[#45475a] p-6">
                         <h2 className="text-xl font-bold text-[#cdd6f4] mb-4">Account Settings</h2>
                         <Separator className="my-4 bg-[#45475a]" />
-
+                        {deleteError && (
+                            <Alert className="bg-[#313244] text-[#f38ba8] border-[#f38ba8] mb-4">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle className="text-[#f38ba8] font-medium">Error</AlertTitle>
+                                <AlertDescription className="text-[#f38ba8]/80">{deleteError}</AlertDescription>
+                            </Alert>
+                        )}
                         <div className="space-y-4">
                             <div>
                                 <h3 className="text-lg font-medium text-[#f38ba8]">Danger Zone</h3>
@@ -263,6 +268,5 @@ export default function ProfilePage() {
                 </TabsContent>
             </Tabs>
         </motion.div>
-    )
+    );
 }
-

@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { withPrisma } from "@/lib/withPrisma";
 
-export async function GET() {
+const getHandler = async () => {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -53,11 +54,14 @@ export async function GET() {
         return NextResponse.json(formattedData);
     } catch (error) {
         console.error("Failed to fetch profile data:", error);
-        return NextResponse.json({ error: (error as Error).message || "Failed to fetch profile data" }, { status: 500 });
+        return NextResponse.json(
+            { error: (error as Error).message || "Failed to fetch profile data" },
+            { status: 500 }
+        );
     }
-}
+};
 
-export async function DELETE() {
+const deleteHandler = async () => {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -74,4 +78,7 @@ export async function DELETE() {
         console.error("Failed to delete account:", error);
         return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
     }
-}
+};
+
+export const GET = withPrisma(getHandler);
+export const DELETE = withPrisma(deleteHandler);

@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { withPrisma } from "@/lib/withPrisma";
 
-export async function GET() {
+const getHandler = async () => {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -38,11 +39,12 @@ export async function GET() {
 
         return NextResponse.json(formattedPolls);
     } catch (error) {
-        console.error("Failed to fetch polls:", error as Error);
+        console.error("Failed to fetch polls:", error);
+        return NextResponse.json({ error: "Failed to fetch polls" }, { status: 500 });
     }
-}
+};
 
-export async function DELETE(request: Request) {
+const deleteHandler = async (request: Request) => {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -65,4 +67,7 @@ export async function DELETE(request: Request) {
         console.error("Failed to delete poll:", error);
         return NextResponse.json({ error: "Failed to delete poll" }, { status: 500 });
     }
-}
+};
+
+export const GET = withPrisma(getHandler);
+export const DELETE = withPrisma(deleteHandler);

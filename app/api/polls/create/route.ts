@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { withPrisma } from "@/lib/withPrisma";
 
-export async function POST(request: Request) {
+const handler = async (request: Request) => {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -37,4 +38,6 @@ export async function POST(request: Request) {
         console.error("Poll creation error:", error);
         return NextResponse.json({ error: "Failed to create poll" }, { status: 500 });
     }
-}
+};
+
+export const POST = withPrisma(handler);

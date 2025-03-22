@@ -4,11 +4,8 @@ import prisma from "@/lib/prisma";
 import type { Session, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
-if (!prisma) {
-    throw new Error("Prisma client is not initialized");
-}
-
 export const authOptions = {
+    secret: process.env.NEXTAUTH_SECRET,
     adapter: PrismaAdapter(prisma),
     providers: [
         GoogleProvider({
@@ -17,7 +14,7 @@ export const authOptions = {
         }),
     ],
     session: {
-        strategy: "jwt" as const,
+        strategy: "jwt" as const, // Explicitly type as "jwt" instead of string
     },
     callbacks: {
         async session({ session, token }: { session: Session; token: JWT }) {

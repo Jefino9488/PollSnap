@@ -1,10 +1,10 @@
-// /app/page.tsx
 "use client"
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { Plus, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import useSWR from "swr"
 
 import { Button } from "@/components/ui/button"
 import { PollList } from "@/components/poll-list"
@@ -12,10 +12,25 @@ import { PollFormModal } from "@/components/poll-form-modal"
 import { Skeleton } from "@/components/ui/skeleton"
 import { LandingPage } from "@/components/landing-page"
 
+// Fetcher function for SWR
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
 export default function VotePage() {
     const { data: session, status } = useSession()
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
+
+    // Fetch poll list every 25 seconds using SWR
+    const { data: polls, error: pollError } = useSWR(
+        session ? "/api/polls" : null,
+        fetcher,
+        {
+            refreshInterval: 25000, // Refresh every 25 seconds (balanced between 20-30s)
+            revalidateOnFocus: false, // Prevent refetch on tab switch
+            revalidateOnReconnect: true, // Refetch if network reconnects
+            dedupingInterval: 20000, // Dedupe requests within 20 seconds
+        }
+    )
 
     useEffect(() => {
         setMounted(true)
@@ -58,7 +73,7 @@ export default function VotePage() {
                 className="space-y-6"
             >
                 <div className="flex justify-between items-center">
-                    <h1 className="text-3xl font-bold text-[#cdd6f4] bg-gradient-to-r from-[#cba6f7] to-[#f5c2e7] bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-bold text-[#cdd6f4] bg-gradient-to-r from-[#cba6f7] to-[#f5c2e7] bg-clip-text">
                         Vote Feed
                     </h1>
                     <Button
@@ -70,7 +85,7 @@ export default function VotePage() {
                     </Button>
                 </div>
 
-                <PollList />
+                <PollList polls={polls} isLoading={!polls && !pollError} />
 
                 <motion.div className="fixed bottom-6 right-6 md:hidden" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                     <Button
@@ -86,4 +101,3 @@ export default function VotePage() {
         </AnimatePresence>
     )
 }
-

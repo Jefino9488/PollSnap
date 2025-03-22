@@ -12,17 +12,17 @@ PollSnap allows users to create, vote, and manage polls seamlessly with real-tim
 
 ## Screenshots
 
-<div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-  <div style="text-align: center;">
-    <img src="./public/screenshots/feeds.png" alt="PollSnap Feeds" width="300" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+<div align="center">
+  <div style="display: inline-block; margin: 0 10px;">
+    <img src="./public/screenshots/feeds.png" alt="PollSnap Feeds" width="250" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
     <p><strong>Feeds</strong></p>
   </div>
-  <div style="text-align: center;">
-    <img src="./public/screenshots/members.png" alt="PollSnap Members" width="300" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+  <div style="display: inline-block; margin: 0 10px;">
+    <img src="./public/screenshots/members.png" alt="PollSnap Members" width="250" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
     <p><strong>Members</strong></p>
   </div>
-  <div style="text-align: center;">
-    <img src="./public/screenshots/profile.png" alt="PollSnap Profile" width="300" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+  <div style="display: inline-block; margin: 0 10px;">
+    <img src="./public/screenshots/profile.png" alt="PollSnap Profile" width="250" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
     <p><strong>Profile</strong></p>
   </div>
 </div>
